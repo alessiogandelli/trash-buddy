@@ -1,0 +1,6 @@
+{
+  "appTitle": "trashbuddy",
+  "@appTitle": {
+    "description": "The title of the application"
+  }
+}
