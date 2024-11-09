@@ -1,0 +1,36 @@
+name: trashbuddu
+description: "A new Flutter project."
+publish_to: 'none'
+version: 0.1.0
+
+environment:
+  sdk: ^3.5.1
+
+dependencies:
+  cached_network_image: ^3.4.1
+  flutter:
+    sdk: flutter
+  flutter_bloc: ^8.1.6
+  flutter_map: ^7.0.2
+  geocoding: ^3.0.0
+  geolocator: ^13.0.1
+  image: ^4.3.0
+  image_picker: ^1.1.2
+  location: ^7.0.1
+  path_provider: ^2.1.5
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+  - 'assets/trashbtn.png'
+  - 'assets/cleanbtn.png'
+  - 'assets/Avatar.png'
+  - 'assets/Bar.png'
+  - 'assets/Tasto_sx.png'
+  - 'assets/Tasto_dx.png'
