@@ -1,6 +1,7 @@
 // lib/repositories/monnezza_repository.dart
 
 import 'dart:io';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:http/http.dart' as http;
 import 'package:trashbuddu/monnezza_bloc.dart';
 import 'dart:convert';
@@ -13,11 +14,9 @@ import 'package:image/image.dart' as img;
 const String apiEndpoint = 'https://dev.api.studybuddy.it/trash';
 
 class MonnezzaRepository {
-  List<Monnezza> _cachedMonnezza = [];
   final String baseUrl = 'https://dev.api.studybuddy.it/trash';
-  //final String baseUrl = 'http://10.199.229.154:1234';
 
-    Future<File> _compressImage(File imageFile) async {
+  Future<File> _compressImage(File imageFile) async {
     // Read image
     final bytes = await imageFile.readAsBytes();
     img.Image? image = img.decodeImage(bytes);
@@ -28,7 +27,6 @@ class MonnezzaRepository {
     final resized = img.copyResize(
       image,
       width: 1024, // Max width
-      
     );
 
     // Compress to jpg
@@ -48,37 +46,21 @@ class MonnezzaRepository {
     required String address,
     required File image,
   }) async {
-    // Local cache update
-    print('Adding monnezza to repo');
-    final tempMonnezza = Monnezza(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      latitude: latitude,
-      longitude: longitude,
-      address: address,
-      image: image,
-      createdAt: DateTime.now(),
-    );
-    _cachedMonnezza.add(tempMonnezza);
-
     try {
-      // Create multipart request
       var uri = Uri.parse('$baseUrl/reports');
       var request = http.MultipartRequest('POST', uri);
       
-      // Create file stream for image upload
       var stream = http.ByteStream(image.openRead());
       var length = await image.length();
       
-      // Create multipart file
       var multipartFile = http.MultipartFile(
         'image',
         stream,
         length,
         filename: image.path.split('/').last,
-        contentType: MediaType('image', 'jpeg'), // Add content type
+        contentType: MediaType('image', 'jpeg'),
       );
       
-      // Add file and other fields to request
       request.files.add(multipartFile);
       request.fields.addAll({
         'latitude': latitude.toString(),
@@ -86,64 +68,49 @@ class MonnezzaRepository {
         'address': address,
       });
 
-      // Send request and handle response
+      print('invio al server: $latitude, $longitude, $address, ${image.path}');
       final streamedResponse = await request.send();
       final response = await http.Response.fromStream(streamedResponse);
-      print('Response status: ${response.body}');
+
+      print('risponde il server: ${response.body}');
+
+      final String ai_res = json.decode(response.body)['type'];
+
+      // if aires starts with <heavy> then it's a heavy trash emit the event
       
-      if (response.statusCode == 201) {
-        final jsonData = json.decode(response.body);
-        
-        // Update cache with server response
-        _cachedMonnezza.remove(tempMonnezza);
-        final serverMonnezza = Monnezza(
-          id: jsonData['_id'],
-          latitude: jsonData['location']['latitude'],
-          longitude: jsonData['location']['longitude'],
-          address: jsonData['address'],
-          image: image,
-          createdAt: DateTime.parse(jsonData['timestamp']),
-        );
-        _cachedMonnezza.add(serverMonnezza);
-      } else {
-        print('Upload failed: ${response.statusCode}');
-        print('Response body: ${response.body}');
-        throw Exception('Failed to upload image');
+
+      print('risponde il server: $ai_res');
+      
+      if (response.statusCode != 201) {
+        throw Exception('Failed to upload image: ${response.statusCode}');
       }
     } catch (e) {
       print('Error during upload: $e');
-      // Keep cached version on failure
+      throw e;
     }
   }
 
   Future<List<Monnezza>> getMonnezzaList() async {
-    try {
+   // try {
       final response = await http.get(Uri.parse('$baseUrl/reports'));
       
       if (response.statusCode == 200) {
         final List<dynamic> data = json.decode(response.body);
-        
-        // Update cache with server data
-        _cachedMonnezza = data.map((item) => Monnezza(
+        return data.map((item) => Monnezza(
           id: item['_id'],
           latitude: item['location']['latitude'],
           longitude: item['location']['longitude'],
           address: item['address'] ?? '',
-          // For now, create an empty file as placeholder
-          // The actual image will be loaded when needed in the UI
           image: File('${item['imageUrl']}'),
           createdAt: DateTime.parse(item['timestamp']),
         )).toList();
-        
-        print('Fetched ${_cachedMonnezza.length} reports from server');
       } else {
-        print('Server error: ${response.statusCode}');
-        print('Response body: ${response.body}');
+        print('risponde il server: ${response.body}');
+        throw Exception('Server error: ${response.statusCode}');
       }
-    } catch (e) {
-      print('Failed to fetch reports: $e');
-    }
-    
-    return _cachedMonnezza;
+    // } catch (e) {
+    //   print('Failed to fetch reports: $e');
+    //   throw e;
+    // }
   }
 }

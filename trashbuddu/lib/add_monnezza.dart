@@ -193,8 +193,8 @@ class _AddMonnezzaState extends State<AddMonnezza> {
                       print('ciao salvo e mando');
                       BlocProvider.of<MonnezzaBloc>(context).add(
                         AddMonnezzaEvent(
-                          latitude: _currentPosition?.latitude ?? 0,
-                          longitude: _currentPosition?.longitude?? 0,
+                          latitude: _currentPosition?.latitude ?? 0.0,
+                          longitude: _currentPosition?.longitude?? 0.0,
                           address: _currentAddress?? '',
                           image: File(_image!.path),
                         ),

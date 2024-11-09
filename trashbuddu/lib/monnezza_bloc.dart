@@ -29,10 +29,10 @@ class Monnezza {
 
 factory Monnezza.fromJson(Map<String, dynamic> json) {
   return Monnezza(
-    id: json['id'],
-    latitude: json['latitude'],
-    longitude: json['longitude'],
-    address: json['address'],
+    id: json['id'] ?? '123',
+    latitude: json['latitude'] ?? 11.2,
+    longitude: json['longitude'] ?? 42.1,
+    address: json['address'] ?? 'casa',
     image: File(json['image']),
     createdAt: DateTime.parse(json['createdAt']),
   );
