@@ -7,10 +7,11 @@ import 'package:geolocator/geolocator.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:trashbuddu/bubble.dart';
 import 'package:trashbuddu/custom_painter.dart';
+import 'package:trashbuddu/feed_page';
+import 'package:trashbuddu/header.dart';
+import 'package:trashbuddu/leaderboard_page.dart';
 
 import 'package:trashbuddu/monnezza_bloc.dart';
-
-
 
 class MyMap extends StatefulWidget {
   const MyMap({super.key});
@@ -22,6 +23,7 @@ class MyMap extends StatefulWidget {
 class _MyMapState extends State<MyMap> {
   LatLng? currentLocation;
   final MapController mapController = MapController();
+
   bool showBubble = false;
 
   @override
@@ -31,6 +33,7 @@ class _MyMapState extends State<MyMap> {
   }
 
   void _showMonnezzaDetails(Monnezza monnezza) {
+    print(monnezza.image.path);
     showDialog(
       context: context,
       builder: (context) => Dialog(
@@ -122,7 +125,8 @@ class _MyMapState extends State<MyMap> {
             FlutterMap(
               mapController: mapController,
               options: MapOptions(
-                initialCenter: currentLocation ?? const LatLng(46.4786, 11.3326),
+                initialCenter:
+                    currentLocation ?? const LatLng(46.4786, 11.3326),
                 initialZoom: 17,
                 onTap: (_, __) {
                   if (showBubble) {
@@ -156,15 +160,13 @@ class _MyMapState extends State<MyMap> {
                               shape: BoxShape.circle,
                             ),
                             child: ClipOval(
-                              key: UniqueKey(),
-                              child: 
-                            Image.asset(
-                              'assets/Avatar.png',
-                              width: 60,
-                              height: 60,
-                              fit: BoxFit.cover,
-                            )
-                            ),
+                                key: UniqueKey(),
+                                child: Image.asset(
+                                  'assets/Avatar.png',
+                                  width: 60,
+                                  height: 60,
+                                  fit: BoxFit.cover,
+                                )),
                           ),
                         ),
                       ),
@@ -195,10 +197,11 @@ class _MyMapState extends State<MyMap> {
                 ),
               ],
             ),
+
             // Bubble Layer
             if (showBubble && currentLocation != null)
               Positioned(
-                top: 80,
+                top: 145,
                 left: 20,
                 right: 20,
                 child: CustomPaint(
@@ -220,48 +223,63 @@ class _MyMapState extends State<MyMap> {
                 child: const Icon(Icons.my_location),
               ),
             ),
+              Positioned(
+              top: 40,
+              left: 10,
+              right: 10,
+              child: Header(points: 500, width: MediaQuery.of(context).size.width),
+              ),
             Positioned(
-         bottom: 0,
-         right: 0,
-         left: 0,
-          child: Image.asset(
-            'assets/Bar.png',
-            
-           
-            fit: BoxFit.cover,
-          ),
-        ),
-        Positioned(
-         bottom: 0,
-         right: 0,
-          child: GestureDetector(
-            onTap: () {
-              // Add your right button action here
-              print('Right button tapped');
-            },
-            child: Image.asset(
-              'assets/Tasto_dx.png',
-              fit: BoxFit.cover,
+              bottom: 0,
+              right: 0,
+              left: 0,
+              child: Image.asset(
+                'assets/Bar.png',
+                fit: BoxFit.cover,
+              ),
             ),
-          ),
-        ),
-        Positioned(
-         bottom: 0,
-         left: 0,
-          child: GestureDetector(
-            onTap: () {
-              // Add your left button action here
-              print('Left button tapped');
-            },
-            child: Image.asset(
-              'assets/Tasto_sx.png',
-              height: 100,
-              fit: BoxFit.cover,
+            Positioned(
+              bottom: 20,
+              right: 20,
+              child: GestureDetector(
+                onTap: () {
+                  // Add your right button action here
+                  print('Right button tapped');
+                  //navigate to LEaderboardPage
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => FeedPage()),
+                  );
+                },
+                child: Image.asset(
+                  height: 70,
+                  
+                  'assets/Tasto_dx.png',
+                  fit: BoxFit.cover,
+                ),
+              ),
             ),
-          ),
-        ),
+            Positioned(
+              bottom: 20,
+              left: 20,
+              child: GestureDetector(
+                onTap: () {
+                  // Add your left button action here
+                  print('Left button tapped');
+                  //navigate to LEaderboardPage
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => LeaderboardPage()),
+                  );
+                },
+                child: Image.asset(
+                  'assets/Tasto_sx.png',
+                  height: 70,
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ),
           ],
-        
         );
       },
     );

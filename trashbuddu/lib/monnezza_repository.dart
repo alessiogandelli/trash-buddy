@@ -14,8 +14,8 @@ const String apiEndpoint = 'https://dev.api.studybuddy.it/trash';
 
 class MonnezzaRepository {
   List<Monnezza> _cachedMonnezza = [];
-  //final String baseUrl = 'https://dev.api.studybuddy.it/trash';
-  final String baseUrl = 'http://10.199.229.154:1234';
+  final String baseUrl = 'https://dev.api.studybuddy.it/trash';
+  //final String baseUrl = 'http://10.199.229.154:1234';
 
     Future<File> _compressImage(File imageFile) async {
     // Read image
@@ -49,6 +49,7 @@ class MonnezzaRepository {
     required File image,
   }) async {
     // Local cache update
+    print('Adding monnezza to repo');
     final tempMonnezza = Monnezza(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
       latitude: latitude,
@@ -88,6 +89,7 @@ class MonnezzaRepository {
       // Send request and handle response
       final streamedResponse = await request.send();
       final response = await http.Response.fromStream(streamedResponse);
+      print('Response status: ${response.body}');
       
       if (response.statusCode == 201) {
         final jsonData = json.decode(response.body);

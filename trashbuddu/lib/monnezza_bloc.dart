@@ -71,6 +71,12 @@ class MonnezzaLoaded extends MonnezzaState {
   MonnezzaLoaded(this.monnezzaList);
 }
 
+class MonnezzaAdded extends MonnezzaState {
+  final Monnezza monnezza;
+
+  MonnezzaAdded(this.monnezza);
+}
+
 class MonnezzaError extends MonnezzaState {
   final String message;
 

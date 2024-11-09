@@ -1,11 +1,11 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:geocoding/geocoding.dart';
 import 'package:image_picker/image_picker.dart';
-
-
-import 'package:location/location.dart';
-
+import 'package:trashbuddu/monnezza_bloc.dart';
 
 class AddMonnezza extends StatefulWidget {
   @override
@@ -13,7 +13,7 @@ class AddMonnezza extends StatefulWidget {
 }
 
 class _AddMonnezzaState extends State<AddMonnezza> {
-  LocationData? _currentPosition;
+  Position? _currentPosition;
   String? _currentAddress;
   XFile? _image;
 
@@ -24,38 +24,31 @@ class _AddMonnezzaState extends State<AddMonnezza> {
   }
 
   _getCurrentLocation() async {
-    Location location = Location();
-
-    bool _serviceEnabled;
-    PermissionStatus _permissionGranted;
-
-    _serviceEnabled = await location.serviceEnabled();
-    if (!_serviceEnabled) {
-      _serviceEnabled = await location.requestService();
-      if (!_serviceEnabled) {
-        return;
-      }
-    }
-
-    _permissionGranted = await location.hasPermission();
-    if (_permissionGranted == PermissionStatus.denied) {
-      _permissionGranted = await location.requestPermission();
-      if (_permissionGranted != PermissionStatus.granted) {
-        return;
-      }
-    }
-
-    LocationData _locationData = await location.getLocation();
-
+    Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high);
     if (mounted) {
       setState(() {
-        _currentPosition = _locationData;
+        _currentPosition = position;
       });
     }
-    
+    _getAddressFromLatLng(position);
   }
 
-
+  _getAddressFromLatLng(Position position) async {
+    try {
+      List<Placemark> placemarks =
+          await placemarkFromCoordinates(position.latitude, position.longitude);
+      Placemark place = placemarks[0];
+      if (mounted) {
+        setState(() {
+          _currentAddress =
+              "${place.locality}, ${place.postalCode}, ${place.country}";
+        });
+      }
+    } catch (e) {
+      print(e);
+    }
+  }
 
   _pickImage() async {
     final ImagePicker _picker = ImagePicker();
@@ -64,8 +57,6 @@ class _AddMonnezzaState extends State<AddMonnezza> {
       _image = image;
     });
   }
-
-
 @override
  Widget build(BuildContext context) {
   return Card(
@@ -98,8 +89,8 @@ class _AddMonnezzaState extends State<AddMonnezza> {
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          "Coordinates: ${_currentPosition!.latitude?.toStringAsFixed(4)}, "
-                          "${_currentPosition!.longitude?.toStringAsFixed(4)}",
+                          "Coordinates: ${_currentPosition!.latitude.toStringAsFixed(4)}, "
+                          "${_currentPosition!.longitude.toStringAsFixed(4)}",
                           style: Theme.of(context).textTheme.bodyMedium,
                         ),
                       ),
@@ -198,7 +189,17 @@ class _AddMonnezzaState extends State<AddMonnezza> {
                   width: double.infinity,
                   child: ElevatedButton.icon(
                     onPressed: () {
-                      // Implement save functionality here
+                      //print('Save Details, ${_currentPosition?.latitude}, ${_currentPosition?.longitude}, $_currentAddress, ${_image?.path}');
+                      print('ciao salvo e mando');
+                      BlocProvider.of<MonnezzaBloc>(context).add(
+                        AddMonnezzaEvent(
+                          latitude: _currentPosition?.latitude ?? 0,
+                          longitude: _currentPosition?.longitude?? 0,
+                          address: _currentAddress?? '',
+                          image: File(_image!.path),
+                        ),
+                      );
+                      Navigator.pop(context);
                     },
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 12),
